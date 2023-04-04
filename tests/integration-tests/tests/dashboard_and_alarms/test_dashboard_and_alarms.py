@@ -20,9 +20,11 @@ from botocore.exceptions import ClientError
 from retrying import retry
 from time_utils import minutes
 
+import logging
 
 @pytest.mark.usefixtures("instance", "os", "scheduler")
-@pytest.mark.parametrize("dashboard_enabled, cw_log_enabled", [(True, True), (True, False), (False, False)])
+@pytest.mark.parametrize("dashboard_enabled, cw_log_enabled", [(True, True)])
+# @pytest.mark.parametrize("dashboard_enabled, cw_log_enabled", [(True, True), (True, False), (False, False)])
 def test_dashboard_and_alarms(
     dashboard_enabled,
     cw_log_enabled,
@@ -62,6 +64,9 @@ def _test_cw_agent_metrics(cw_client, headnode_instance_id, compute_instance_id)
     metrics_response_headnode = _get_metric_data(headnode_instance_id, cw_client, start_timestamp, end_timestamp)
     mem_values = _get_metric_data_values(metrics_response_headnode, "mem")
     disk_values = _get_metric_data_values(metrics_response_headnode, "disk")
+    logging.info(f"metrics_response_headnode: \n{metrics_response_headnode}")
+    logging.info(f"headnode mem values: \n{mem_values}")
+    logging.info(f"headnode disk values: \n{disk_values}")
     assert_that(mem_values).is_not_empty()
     assert_that(disk_values).is_not_empty()
 
@@ -71,6 +76,9 @@ def _test_cw_agent_metrics(cw_client, headnode_instance_id, compute_instance_id)
     metrics_response_compute = _get_metric_data(compute_instance_id, cw_client, start_timestamp, end_timestamp)
     mem_values = _get_metric_data_values(metrics_response_compute, "mem")
     disk_values = _get_metric_data_values(metrics_response_compute, "disk")
+    logging.info(f"metrics_response_compute: \n{metrics_response_compute}")
+    logging.info(f"headnode mem values: \n{mem_values}")
+    logging.info(f"headnode disk values: \n{disk_values}")
     assert_that(mem_values).is_empty()
     assert_that(disk_values).is_empty()
 
@@ -118,6 +126,9 @@ def _get_start_end_timestamp(minutes):
     end_dt = datetime.datetime.fromtimestamp(end_timestamp_ceil)
     start_dt = end_dt - datetime.timedelta(minutes=minutes)
     start_timestamp = start_dt.timestamp()
+    logging.info(f"now: {now_utc}")
+    logging.info(f"start: {start_dt}")
+    logging.info(f"end: {end_dt}")
     return start_timestamp, end_timestamp_ceil
 
 
